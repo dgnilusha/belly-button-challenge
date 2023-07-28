@@ -1,25 +1,45 @@
 
-// drop down section
+
 // get the url
 const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json"
 
-// function buildCharts() {
-//   d3.json(url)
-//   let samples = data.samples;
-//   let resultArray = samples.filter
+//  build a meta data Demographic
 
-//  // Call the buildCharts 
-//  buildCharts(dataNames[0], data);
+function showMetaData(selectedSample) {
+  d3.json(url).then((data)=>{
+  let metaData1 = data.metadata;
+  let newarray = metaData1.filter( sampleobject => sampleobject.id == selectedSample)
+  let result = newarray [0];
 
-//  horizontal bar chart
-function buildCharts(selectedSample, data) {
+console.log("result2", result);
+
+let metadataDisplay = d3.select("#sample-metadata");
+metadataDisplay.html("");
+Object.entries(result).forEach(([key, value]) => {
+  // metadataDisplay.append("h3").text(`${key}: ${value}`);
+  metadataDisplay.append("h3").text(`${key}: ${value}`);
+});
+});
+}
+// // Event listener for the dropdown change
+// d3.select("#selDataset").on("change", function() {
+//   // Get the selected value from the dropdown
+//   let selectedSample = d3.select(this).property("value");
+// });
+
+function buildCharts(selectedSample) {
+d3.json(url).then(function(data) {
+  console.log(data);
+
+
 // Filter the data to get the information for the selected sample
-let selectedData = data.samples.find(sample => sample.id === selectedSample);
+let selectedData = data.samples.filter(sample => sample.id === selectedSample);
+let newData = selectedData[0]
 
 // Get the top 10 OTUs for the selected sample
-let sampleValues = selectedData.sample_values.slice(0, 10).reverse();
-let otuIDs = selectedData.otu_ids.slice(0, 10).reverse().map(id => `OTU ${id}`);
-let otuLabels = selectedData.otu_labels.slice(0, 10).reverse();
+let sampleValues = newData.sample_values.slice(0, 10).reverse();
+let otuIDs = newData.otu_ids.slice(0, 10).reverse().map(id => `OTU ${id}`);
+let otuLabels = newData.otu_labels.slice(0, 10).reverse();
 
 // Create the trace for the horizontal bar chart
 let trace1 = {
@@ -39,18 +59,34 @@ let layout = {
 };
 
 // Plot the chart using Plotly
-Plotly.newPlot("plot", [trace1], layout);
-}
+Plotly.newPlot("bar", [trace1], layout);
 
-//  dropdown change
-d3.select("#selDataset").on("change", function() {
-// Get the selected value from the dropdown
-let selectedSample = d3.select(this).property("value");
+  // Create the trace for the bubble chart
+  let trace2 = {
+    x: newData.otu_ids,
+    y: newData.sample_values,
+    text: newData.otu_labels,
+    mode: "markers",
+    marker: {
+      size: newData.sample_values,
+      color: newData.otu_ids,
+      colorscale: "Earth",
+    },
+  };
 
-// Call the buildCharts 
-buildCharts(selectedSample, data);
+  // Define the layout for the bubble chart
+  let layout2 = {
+    title: "Samples",
+    xaxis: { title: "OTU IDs" },
+    yaxis: { title: "Sample Values" },
+  };
+
+  // Plot the bubble chart using Plotly
+  Plotly.newPlot("bubble", [trace2], layout2);
+
 });
 
+};
 
 
 function init() {
@@ -68,46 +104,20 @@ function init() {
         .text(dataNames[i])
         .property("value", dataNames[i]);
     };
+let firstSample = dataNames[0];
+
+
+// Call the buildCharts 
+buildCharts(firstSample, data);
+
+showMetaData(firstSample)
 
   });
 }
-
+function optionChanged(sampleData2){
+  buildCharts(sampleData2) 
+  showMetaData(sampleData2)
+} 
+ 
 init();
 
-// d3.json(url).then(function(data){
-//     console.log("button",data);
-// });
-// sort the data by otu value
-// // let sortByOtu = data.sort((a,b) => b-a);
-// let sortByOtu = data.sort((a,b) => b.sample_values-a.sample_values);
-// //slice the first 10 objects
-// slicedData = sortByOtu.slice(0,10);
-
-// //reverse the array 
-// reversedData = slicedData.reverse();
-
-
-// //trace1 for the otu data
-// let trace1 = {
-//   x: 
-//   y: dataNames,
-//   // text: reversedData.map(object => object.),
-//   name: "otu_ids",
-//   type: "bar",
-//   orientation: "h"
-// };
-
-// //apply the layout
-// let layout = {
-//   title: "belly-button-chart",
-//   margin: {
-//     l: 100,
-//     r: 100,
-//     t: 100,
-//     b: 100
-//   }
-// };
-
-// // let tracedata2 = [trace1]
-
-// Plotly.newPlot("plot",trace1, layout);
